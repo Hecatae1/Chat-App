@@ -42,18 +42,18 @@ import { NgClass } from '@angular/common';
 
   <footer>
    <input
-  [(ngModel)]="message"
-  (keyup.enter)="sendMessage()"
-  placeholder="Type a message…"
-/>
+      [(ngModel)]="message"
+      (keyup.enter)="sendMessage()"
+      placeholder="Type a message…"
+  />
 
-     <button (click)="sendMessage()" class="send-btn">➤</button>
+    <button (click)="sendMessage()" class="send-btn">➤</button>
 
   </footer>
 
 </div>
 
-    <router-outlet />
+<router-outlet />
   `,
   styleUrl: '../styles.css'
 })
