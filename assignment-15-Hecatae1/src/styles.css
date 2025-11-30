@@ -1,1 +1,75 @@
 /* You can add global styles to this file, and also import other style files */
+/* app.component.css */
+h1 {
+  font-size: 2rem;
+  margin: 1rem;
+  text-align: center;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 80vh;        /* reduced height */
+  width: 60vw;         /* reduced width */
+  margin: 2rem auto;   /* center horizontally */
+  font-size: 1rem;
+  border: 0.1rem solid #ccc;
+  border-radius: 0.5rem;
+  overflow: hidden;    /* prevent horizontal scroll */
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f5f5f5;
+  flex: 0 0 auto;       /* fixed height */
+}
+
+main {
+  flex: 1 1 auto;
+  overflow-y: auto;     /* ✅ vertical scroll only */
+  overflow-x: hidden;   /* ✅ no horizontal scroll */
+  padding: 1rem;
+}
+
+.message {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  word-wrap: break-word;
+}
+
+footer {
+  flex: 0 0 auto;
+  padding: 1rem;
+  border-top: 0.1rem solid #ccc;
+  display: flex;
+}
+
+footer input {
+  flex: 1 1 auto;
+  font-size: 1rem;
+  padding: 0.5rem;
+}
+
+input[type="text"], input[type="color"] {
+  margin-left: 0.5rem;
+  font-size: 1rem;
+}
+
+
+.send-btn {
+  flex: 0 0 auto;
+  font-size: 1.5rem;       /* arrow size */
+  padding: 0.5rem 1rem;
+  background: #007bff;     /* blue button */
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.send-btn:hover {
+  background: #0056b3;     /* darker on hover */
+}

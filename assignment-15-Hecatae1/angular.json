@@ -60,6 +60,16 @@
               "entry": "src/server.ts"
             }
           },
+          "server": {
+  "options": {
+    "polyfills": ["zone.js/node"]
+  }
+},
+"build": {
+  "options": {
+    "main": ["zone.js"]
+  }
+},
           "configurations": {
             "production": {
               "budgets": [
