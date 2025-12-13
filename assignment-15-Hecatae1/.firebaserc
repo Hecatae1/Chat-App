@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "chatapp-b8bbb"
-  }
+  },
+  "targets": {
+    "chatapp-b8bbb": {
+      "hosting": {
+        "default": [
+          "chatapp-b8bbb"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

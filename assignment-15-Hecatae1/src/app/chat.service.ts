@@ -6,7 +6,9 @@ import {
   addDoc,
   query,
   orderBy,
-  Timestamp
+  Timestamp,
+  CollectionReference,
+  DocumentData
 } from '@angular/fire/firestore';
 
 export interface ChatMessage {
@@ -15,29 +17,36 @@ export interface ChatMessage {
   timestamp: Timestamp;
   color?: string;
 }
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ChatService {
-
   private firestore = inject(Firestore);
-  private messagesRef = collection(this.firestore, 'cs336-chat');
+  private messagesRef: CollectionReference<DocumentData> | null = null;
 
-  // 🔥 use your expected name: mesgs$
-  mesgs$ = collectionData(
-    query(this.messagesRef, orderBy('timestamp')),
-    { idField: 'id' }
-  ) as any;
+  // observable stream of messages
+  mesgs$ = null as any;
 
-  async submitNewMessage(userName: string, message: string, color: string) {
+  /** Call this when entering a room */
+  setRoom(roomId: string) {
+    this.messagesRef = collection(this.firestore, `rooms/${roomId}/chats`);
+    this.mesgs$ = collectionData(
+      query(this.messagesRef, orderBy('timestamp')),
+      { idField: 'id' }
+    ) as any;
+  }
+
+  // ✅ Updated to accept userId as well
+  async submitNewMessage(userId: string, userName: string, message: string, color: string) {
+    if (!this.messagesRef) {
+      throw new Error('Room not set. Call setRoom(roomId) first.');
+    }
     const safeColor = color && color.trim() !== '' ? color : '#000000';
+
     return addDoc(this.messagesRef, {
-      userName,
-      message,
-      color,
+      userId,                // permanent identity
+      userName,              // display handle
+      message: message.trim(),
+      color: safeColor,
       timestamp: Timestamp.fromDate(new Date())
     });
-
   }
 }
