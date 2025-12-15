@@ -6,8 +6,8 @@ import { PLATFORM_ID, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { ChatService } from '../../chat.service';
 import { RouterLink, NavigationEnd, Router } from '@angular/router';
-import { collection, getDocs, deleteDoc, doc } from '@angular/fire/firestore';
-
+import { getDoc, collection, getDocs, deleteDoc, doc } from '@angular/fire/firestore';
+import { LinkifyPipe } from '../../linkify-pipe';
 /**
  * RoomComponent
  * -------------
@@ -23,7 +23,7 @@ import { collection, getDocs, deleteDoc, doc } from '@angular/fire/firestore';
 @Component({
   selector: 'app-room',
   standalone: true,
-  imports: [CommonModule, FormsModule, AsyncPipe, RouterLink],
+  imports: [CommonModule, FormsModule, AsyncPipe, RouterLink, LinkifyPipe],
   template: `
    <div class="app-shell">
   <aside class="sidebar">
@@ -38,7 +38,11 @@ import { collection, getDocs, deleteDoc, doc } from '@angular/fire/firestore';
             <a [routerLink]="['/room', r]" [ngClass]="{ active: r === roomId }">
               {{ r }}
             </a>
-<button class="delete-btn" (click)="deleteRoom(r)">×</button>
+<button (click)="handleDelete(roomId)" class="delete-btn" title="Delete room">
+  ✖
+</button>
+
+
 
           </li>
         }
@@ -71,7 +75,8 @@ import { collection, getDocs, deleteDoc, doc } from '@angular/fire/firestore';
               </span>
               <span class="time">{{ mesg.timestamp.toDate() | date:'shortTime' }}</span>
             </div>
-            <div class="text">{{ mesg.message }}</div>
+            <div class="text" [innerHTML]="mesg.message | linkify"></div>
+
           </div>
         </div>
       }
@@ -239,28 +244,47 @@ export class RoomComponent implements OnInit {
     this.message = ''; // clear input after sending
   }
 
-  /**
-   * Delete a room completely.
-   * - Removes all messages from Firestore
-   * - Removes room from localStorage sidebar
-   */
-  async deleteRoom(roomId: string): Promise<void> {
-    const confirmed = confirm(`Are you sure you want to delete room "${roomId}"?`);
+
+
+  async handleDelete(roomId: string): Promise<void> {
+    // Step 1: Ask for confirmation
+    const confirmed = confirm(`Do you want to delete room "${roomId}"?`);
     if (!confirmed) return;
 
-    // Delete all messages in the room from Firestore
-    const messagesRef = collection(this.chat['firestore'], `rooms/${roomId}/chats`);
-    const snapshot = await getDocs(messagesRef);
-    snapshot.forEach(async (msg) => {
-      await deleteDoc(doc(messagesRef, msg.id));
-    });
-
-    // Optionally delete the room doc itself if you have one
-    // await deleteDoc(doc(this.chat['firestore'], 'rooms', roomId));
-
-    // Remove from localStorage sidebar
+    // Step 2: Update UI immediately (localStorage + sidebar)
     let updated = this.rooms.filter(r => r !== roomId);
     localStorage.setItem('rooms', JSON.stringify(updated));
     this.rooms = updated;
+
+    // Step 3: Redirect if you were in the deleted room
+    if (this.roomId === roomId) {
+      if (this.rooms.length > 0) {
+        this.router.navigate(['/room', this.rooms[0]]);
+      } else {
+        this.router.navigate(['/landing']);
+      }
+    }
+
+    // Step 4: Check if current user is the creator
+    const roomDoc = doc(this.chat['firestore'], 'rooms', roomId);
+    const roomSnap = await getDoc(roomDoc);
+
+    if (roomSnap.exists()) {
+      const createdBy = roomSnap.data()['createdBy'];
+      if (createdBy === this.currentUser.userId) {
+        // Admin/creator → extra alert
+        alert(`Room "${roomId}" will be removed for ALL users.`);
+
+        // Firestore cleanup (async, doesn’t block UI)
+        const messagesRef = collection(this.chat['firestore'], `rooms/${roomId}/chats`);
+        const snapshot = await getDocs(messagesRef);
+        snapshot.forEach(async (msg) => {
+          await deleteDoc(doc(messagesRef, msg.id));
+        });
+
+        await deleteDoc(roomDoc);
+      }
+      // Non‑creator → nothing else to do (soft delete already handled)
+    }
   }
 }

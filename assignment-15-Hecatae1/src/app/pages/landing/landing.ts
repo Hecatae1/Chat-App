@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, inject } from '@angular/core';
 import { RouterLink, NavigationEnd } from '@angular/router';
-import { collection, getDocs, deleteDoc, doc } from '@angular/fire/firestore';
+import { setDoc, doc } from '@angular/fire/firestore';
 import { ChatService } from '../../chat.service';
 
 /**
@@ -64,7 +64,7 @@ import { ChatService } from '../../chat.service';
 
         <hr />
 
-        <label>
+        <label id="room-id">
           Room ID:
           <input type="text" [(ngModel)]="roomId" name="roomId" placeholder="Enter or generate" />
         </label>
@@ -173,10 +173,17 @@ export class LandingComponent implements OnInit {
    * - Uses base36 substring for short ID
    * - Saves preferences and room
    */
-  generateId(): void {
+  async generateId(): Promise<void> {
     this.roomId = Math.random().toString(36).substring(2, 8);
     this.savePrefs();
-    this.saveRoom(this.roomId);
+    // this.saveRoom(this.roomId);
+
+    // 👇 Set createdBy when the room is first created
+    await setDoc(doc(this.chat['firestore'], 'rooms', this.roomId), {
+      createdBy: localStorage.getItem('userId')
+    }, { merge: true });
+
+
   }
 
   /**
@@ -217,19 +224,15 @@ export class LandingComponent implements OnInit {
    * - Removes room from localStorage sidebar
    */
   async deleteRoom(roomId: string): Promise<void> {
-    const confirmed = confirm(`Are you sure you want to delete room "${roomId}"?`);
+    const confirmed = confirm(`Do you want to remove room "${roomId}" from your sidebar?`);
     if (!confirmed) return;
 
-    // Delete all messages in the room from Firestore
-    const messagesRef = collection(this.chat['firestore'], `rooms/${roomId}/chats`);
-    const snapshot = await getDocs(messagesRef);
-    snapshot.forEach(async (msg) => {
-      await deleteDoc(doc(messagesRef, msg.id));
-    });
-
-    // Remove from localStorage sidebar
+    // ✅ Immediately update localStorage and sidebar (instant feedback)
     let updated = this.rooms.filter(r => r !== roomId);
     localStorage.setItem('rooms', JSON.stringify(updated));
     this.rooms = updated;
+
+    // ❌ Do NOT delete Firestore messages here
+    // This way, other users still see the room and its history
   }
 }

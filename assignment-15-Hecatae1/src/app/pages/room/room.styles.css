@@ -66,7 +66,11 @@
   padding: 1rem;
   background: #fff;
 }
-
+.time{
+  font-size: 0.75rem;
+  color: #888;
+  margin-left: 0.7rem;
+}
 .message {
   margin-bottom: 1rem;
   display: flex;
@@ -109,6 +113,7 @@
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  overflow: scroll;
 }
 
 .send-btn {
