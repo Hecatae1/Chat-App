@@ -232,7 +232,7 @@ export class LandingComponent implements OnInit {
     localStorage.setItem('rooms', JSON.stringify(updated));
     this.rooms = updated;
 
-    // ❌ Do NOT delete Firestore messages here
+    // Note: We do NOT delete the room document or its messages from Firestore.
     // This way, other users still see the room and its history
   }
 }
