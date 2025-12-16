@@ -1,4 +1,4 @@
-#Chat App
+# Chat App <br/>
 (will take name suggestions)
 This is a simple Angular + Firebase chat application.
 
