@@ -1,7 +1,5 @@
-# cs336-assignment-15
-
-# Assignment 15 – Chat App
-
+#Chat App
+(will take name suggestions)
 This is a simple Angular + Firebase chat application.
 
 ## Setup
